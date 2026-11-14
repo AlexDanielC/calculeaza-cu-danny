@@ -1,0 +1,568 @@
+/* ============ Paletă și fonturi ============ */
+:root {
+  --paper: #f6f2e8;
+  --grid: rgba(54, 92, 160, 0.09);
+  --margin-line: rgba(232, 96, 76, 0.35);
+  --ink: #1d2140;
+  --ink-soft: #2c3260;
+  --muted: #676b84;
+  --marigold: #f3a33a;
+  --coral: #e8604c;
+  --cream: #f4efe2;
+  --lcd: #dfe6cc;
+  --lcd-ink: #232a1c;
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  background-color: var(--paper);
+  /* Foaie de caiet de matematică */
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* Linia roșie de margine a caietului */
+@media (min-width: 1000px) {
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 auto 0 48px;
+    width: 2px;
+    background: var(--margin-line);
+    pointer-events: none;
+  }
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 max(16px, 6vw) 40px;
+}
+
+/* ============ Titlu ============ */
+.hero {
+  padding-block: clamp(32px, 6vw, 64px) clamp(20px, 3vw, 36px);
+}
+
+.eyebrow {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.8rem, 8vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+
+.name {
+  position: relative;
+  display: inline-block;
+  font-style: italic;
+  color: var(--coral);
+}
+
+.squiggle {
+  position: absolute;
+  left: 2%;
+  bottom: -0.16em;
+  width: 96%;
+  height: 0.22em;
+  overflow: visible;
+}
+
+.squiggle path {
+  fill: none;
+  stroke: var(--marigold);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.lead {
+  max-width: 40ch;
+  margin: 26px 0 0;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ============ Zona de lucru ============ */
+.workspace {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(24px, 4vw, 48px);
+}
+
+/* ============ Calculatorul ============ */
+.calculator {
+  width: min(100%, 420px);
+  padding: 18px 20px 24px;
+  border-radius: 32px;
+  background: linear-gradient(160deg, #2c3260 0%, #1b1f3b 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.25),
+    0 34px 60px -24px rgba(29, 33, 64, 0.6),
+    0 14px 24px -14px rgba(29, 33, 64, 0.45);
+}
+
+.device-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 14px;
+}
+
+.brand {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: rgba(244, 239, 226, 0.55);
+}
+
+.brand b {
+  color: var(--marigold);
+  font-weight: 700;
+}
+
+/* Panoul solar al calculatorului */
+.solar {
+  width: 92px;
+  height: 20px;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, 0.12) 22px 23px),
+    linear-gradient(180deg, #4a3a33, #2a211d);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.display {
+  display: grid;
+  gap: 4px;
+  min-height: 136px;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: var(--lcd);
+  color: var(--lcd-ink);
+  font-family: var(--font-mono);
+  text-align: right;
+  overflow-wrap: anywhere;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.expression {
+  min-height: 1.3em;
+  font-size: 0.9rem;
+  color: #5c6447;
+}
+
+.result {
+  align-self: center;
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.result[data-size="md"] { font-size: 1.85rem; }
+.result[data-size="sm"] { font-size: 1.4rem; }
+.result[data-size="xs"] { font-size: 1.1rem; }
+
+.result.is-error {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #b23a2b;
+}
+
+.ghost {
+  opacity: 0.3;
+}
+
+.note {
+  min-height: 1.25em;
+  font-size: 0.82rem;
+  color: #4d5638;
+}
+
+/* Fracție scrisă pe două rânduri */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  font-size: 0.78em;
+  line-height: 1.1;
+}
+
+.frac-num {
+  padding: 0 0.25em 0.05em;
+  border-bottom: 3px solid currentColor;
+}
+
+.frac-den {
+  padding-top: 0.05em;
+}
+
+/* ============ Taste ============ */
+.keys {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.key {
+  height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 1.3rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #b8b19f, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:hover {
+  filter: brightness(1.06);
+}
+
+.key:active,
+.key.pressed {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #b8b19f, 0 2px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
+.key:focus-visible {
+  outline: 3px solid var(--marigold);
+  outline-offset: 2px;
+}
+
+.fx,
+.side {
+  background: #3a4178;
+  color: #ecebf7;
+  box-shadow: 0 4px 0 #252a52, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.fx {
+  height: 44px;
+  font-size: 1.1rem;
+}
+
+.fx:active, .fx.pressed,
+.side:active, .side.pressed {
+  box-shadow: 0 0 0 #252a52, 0 2px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
+.word {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.op {
+  background: var(--marigold);
+  color: #2b1d07;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 0 #b4711b, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.op:active, .op.pressed {
+  box-shadow: 0 0 0 #b4711b, 0 2px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
+.ctl {
+  height: 54px;
+  background: #fbe3dd;
+  color: #b23a2b;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #c99a8f, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.keys .ctl ~ .fx:nth-child(-n + 15) {
+  height: 54px;
+}
+
+.eq {
+  background: var(--coral);
+  color: #fff;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 0 #a9402f, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.eq:active, .eq.pressed {
+  box-shadow: 0 0 0 #a9402f, 0 2px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
+.zero {
+  grid-column: span 2;
+}
+
+/* ============ Istoric ============ */
+.history {
+  position: relative;
+  width: min(100%, 300px);
+  padding: 26px 22px 18px;
+  border-radius: 4px;
+  background: #fffdf7;
+  box-shadow: 0 1px 0 rgba(29, 33, 64, 0.08), 0 18px 34px -20px rgba(29, 33, 64, 0.45);
+  transform: rotate(-1.2deg);
+}
+
+/* Bucata de bandă adezivă */
+.history::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 96px;
+  height: 26px;
+  transform: translateX(-50%) rotate(2deg);
+  background: rgba(243, 163, 58, 0.45);
+}
+
+.history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history h2 {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--coral);
+  font: 700 0.85rem var(--font-ui);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.history-empty {
+  margin: 10px 0 4px;
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.history-list {
+  max-height: 380px;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.history-item {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 9px 6px;
+  border: 0;
+  border-bottom: 1.5px dashed rgba(29, 33, 64, 0.15);
+  background: none;
+  color: var(--ink);
+  text-align: right;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.history-item:hover,
+.history-item:focus-visible {
+  background: rgba(243, 163, 58, 0.14);
+  outline: none;
+}
+
+.history-expr {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.history-main {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* ============ Sfat tastatură ============ */
+.kbd-hint {
+  margin: 28px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 1px 6px;
+  border: 1px solid rgba(29, 33, 64, 0.25);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: #fff;
+  font: 500 0.78rem var(--font-mono);
+  text-align: center;
+}
+
+/* ============ Danny ============ */
+.danny {
+  position: fixed;
+  right: clamp(12px, 2vw, 32px);
+  bottom: 8px;
+  z-index: 10;
+  width: clamp(190px, 17vw, 250px);
+  margin: 0;
+  pointer-events: none;
+}
+
+.hedgehog {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 100%;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.bubble {
+  position: absolute;
+  right: 72%;
+  bottom: 88%;
+  width: 250px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 20px 20px 4px 20px;
+  background: #fff;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.15;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.bubble.is-tip {
+  background: #fff6e4;
+}
+
+.eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 5.5s infinite;
+}
+
+.mood-happy .hedgehog {
+  animation: hop 0.55s ease-out;
+}
+
+.mood-think .hedgehog {
+  animation: tilt 0.9s ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.012, 1.022); }
+}
+
+@keyframes blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}
+
+@keyframes hop {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-18px) rotate(-3deg); }
+  65% { transform: translateY(0) scale(1.04, 0.96); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes tilt {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-5deg); }
+  65% { transform: rotate(4deg); }
+}
+
+/* Pe ecrane mai mici, Danny stă la finalul paginii în loc să plutească */
+@media (max-width: 1240px) {
+  .danny {
+    position: static;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 8px;
+    width: auto;
+    margin-top: 12px;
+  }
+
+  .hedgehog {
+    width: clamp(130px, 30vw, 200px);
+    flex-shrink: 0;
+  }
+
+  .bubble {
+    position: static;
+    width: auto;
+    max-width: 260px;
+    margin-bottom: clamp(80px, 18vw, 140px);
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 440px) {
+  .keys { gap: 7px; }
+  .key { height: 48px; font-size: 1.15rem; }
+  .fx { height: 40px; }
+  .ctl, .keys .ctl ~ .fx:nth-child(-n + 15) { height: 48px; }
+  .word { font-size: 0.72rem; }
+  .calculator { padding: 14px 12px 18px; border-radius: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hedgehog, .eye, .mood-happy .hedgehog, .mood-think .hedgehog {
+    animation: none;
+  }
+  .key { transition: none; }
+}
+
+.nowrap {
+  white-space: nowrap;
+}
