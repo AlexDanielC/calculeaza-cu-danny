@@ -250,6 +250,11 @@ h1 {
   box-shadow: 0 4px 0 #b8b19f, 0 8px 14px -8px rgba(0, 0, 0, 0.6);
   transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  /* Pe telefon: fără zoom la dublu-tap, fără selecție de text sau meniu la apăsare lungă */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .key:hover {
@@ -425,8 +430,22 @@ h1 {
   font-weight: 500;
 }
 
-/* ============ Sfat tastatură ============ */
-.kbd-hint {
+/* ============ Sfaturi (diferite pe telefon și pe calculator) ============ */
+.only-touch {
+  display: none;
+}
+
+@media (hover: none) {
+  .only-pointer {
+    display: none;
+  }
+
+  .only-touch {
+    display: block;
+  }
+}
+
+.hint {
   margin: 28px 0 0;
   font-size: 0.85rem;
   color: var(--muted);
@@ -442,6 +461,43 @@ kbd {
   background: #fff;
   font: 500 0.78rem var(--font-mono);
   text-align: center;
+}
+
+/* ============ Balonul de la apăsare lungă (telefon) ============ */
+.tip-pop {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: min(300px, calc(100vw - 24px));
+  padding: 8px 14px 8px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: #fff6e4;
+  box-shadow: 4px 4px 0 var(--ink);
+  pointer-events: none;
+  animation: pop-in 0.16s ease-out;
+}
+
+.tip-pop p {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.tip-face {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: none; }
 }
 
 /* ============ Danny ============ */

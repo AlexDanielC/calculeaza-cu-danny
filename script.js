@@ -615,6 +615,9 @@ function useHistoryValue(value) {
 
 const dannyEl = document.getElementById("danny");
 const bubbleEl = document.getElementById("bubble");
+// Pe telefon nu există mouse: salutul se potrivește dispozitivului
+const IS_TOUCH = window.matchMedia("(hover: none)").matches;
+if (IS_TOUCH) bubbleEl.textContent = "Salut! Eu sunt Danny. Ține apăsat pe o tastă și îți spun ce face.";
 let dannyMessage = bubbleEl.textContent;
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -797,10 +800,91 @@ function press(key) {
   render();
 }
 
-document.querySelector(".keys").addEventListener("click", (event) => {
+const keysEl = document.querySelector(".keys");
+
+keysEl.addEventListener("click", (event) => {
+  if (suppressNextClick) {
+    suppressNextClick = false; // a fost apăsare lungă: doar explicăm, nu apăsăm tasta
+    return;
+  }
   const button = event.target.closest("button[data-k]");
   if (button) press(button.dataset.k);
 });
+
+// ---------- Telefon: apăsare lungă pe o tastă → Danny explică ce face ----------
+
+const LONG_PRESS_MS = 450;
+const tipPop = document.getElementById("tip-pop");
+const tipPopText = document.getElementById("tip-pop-text");
+let pressTimer = null;
+let pressStart = null;
+let hideTipTimer = null;
+let suppressNextClick = false;
+
+// Fața lui Danny în balon: o copie a desenului mare, decupată pe cap
+const face = document.querySelector(".hedgehog").cloneNode(true);
+face.setAttribute("class", "tip-face");
+face.setAttribute("viewBox", "55 45 150 150");
+face.setAttribute("aria-hidden", "true");
+face.removeAttribute("role");
+face.removeAttribute("aria-label");
+tipPop.prepend(face);
+
+function showTipPop(button) {
+  clearTimeout(hideTipTimer);
+  tipPopText.textContent = button.dataset.tip;
+  tipPop.hidden = false;
+  const key = button.getBoundingClientRect();
+  const pop = tipPop.getBoundingClientRect();
+  const left = key.left + key.width / 2 - pop.width / 2;
+  const top = key.top - pop.height - 12;
+  tipPop.style.left = `${Math.min(Math.max(12, left), window.innerWidth - pop.width - 12)}px`;
+  tipPop.style.top = `${top < 12 ? key.bottom + 12 : top}px`;
+}
+
+function hideTipPop(delay = 0) {
+  clearTimeout(hideTipTimer);
+  hideTipTimer = setTimeout(() => {
+    tipPop.hidden = true;
+  }, delay);
+}
+
+function cancelLongPress() {
+  clearTimeout(pressTimer);
+  pressTimer = null;
+}
+
+keysEl.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse") return;
+  suppressNextClick = false;
+  hideTipPop();
+  const button = event.target.closest(".key[data-tip]");
+  if (!button) return;
+  pressStart = { x: event.clientX, y: event.clientY };
+  pressTimer = setTimeout(() => {
+    pressTimer = null;
+    suppressNextClick = true;
+    showTipPop(button);
+    navigator.vibrate?.(15);
+  }, LONG_PRESS_MS);
+});
+
+keysEl.addEventListener("pointermove", (event) => {
+  if (!pressTimer) return;
+  if (Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > 10) cancelLongPress();
+});
+
+keysEl.addEventListener("pointerup", () => {
+  cancelLongPress();
+  if (!tipPop.hidden) hideTipPop(2500);
+});
+
+keysEl.addEventListener("pointercancel", () => {
+  cancelLongPress();
+  hideTipPop();
+});
+
+keysEl.addEventListener("contextmenu", (event) => event.preventDefault());
 
 // Danny explică tasta peste care ții mouse-ul
 document.querySelectorAll(".key[data-tip]").forEach((button) => {
@@ -808,7 +892,9 @@ document.querySelectorAll(".key[data-tip]").forEach((button) => {
     if (event.pointerType === "mouse") showTip(button.dataset.tip);
   });
   button.addEventListener("pointerleave", hideTip);
-  button.addEventListener("focus", () => showTip(button.dataset.tip));
+  button.addEventListener("focus", () => {
+    if (button.matches(":focus-visible")) showTip(button.dataset.tip); // doar navigare din tastatură
+  });
   button.addEventListener("blur", hideTip);
 });
 
