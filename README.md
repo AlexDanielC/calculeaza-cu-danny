@@ -41,6 +41,7 @@ Alte lucruri utile:
 | `index.html` | Structura paginii, tastele și desenul SVG cu Danny |
 | `style.css` | Designul: foaia de caiet, calculatorul, istoricul, animațiile lui Danny |
 | `script.js` | Logica: introducerea expresiei, parserul, funcțiile matematice, istoricul |
+| `tests/calculator.test.js` | Testele automate (`node --test`) |
 
 ## Cum funcționează calculul
 
@@ -48,3 +49,15 @@ Expresia se ține ca listă de „jetoane” (numere, operatori, paranteze, func
 La `=`, un parser descendent recursiv o evaluează respectând ordinea operațiilor:
 paranteze → puteri → înmulțiri/împărțiri → adunări/scăderi.
 Nu se folosește `eval()`, care ar fi nesigur.
+
+## Teste
+
+Cu [Node.js](https://nodejs.org) instalat, din folderul `calculator`:
+
+```
+node --test
+```
+
+Testele (în `tests/calculator.test.js`) rulează aplicația într-o pagină simulată și apasă tastele ca un utilizator:
+ordinea operațiilor, împărțirea cu rest, fracțiile, factorii primi, mesajele de eroare, istoricul
+și bula lui Danny de pe telefon (apare la apăsare lungă, dispare la 2,5 secunde, la derulare sau la o atingere în altă parte).
