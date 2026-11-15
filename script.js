@@ -886,6 +886,15 @@ keysEl.addEventListener("pointercancel", () => {
 
 keysEl.addEventListener("contextmenu", (event) => event.preventDefault());
 
+// Bula dispare imediat dacă derulezi pagina sau atingi oriunde altundeva
+const dismissTipPop = () => {
+  if (!tipPop.hidden) hideTipPop();
+};
+document.addEventListener("scroll", dismissTipPop, { capture: true, passive: true });
+document.addEventListener("pointerdown", (event) => {
+  if (!keysEl.contains(event.target)) dismissTipPop(); // pe taste se ocupă deja handler-ul de mai sus
+});
+
 // Danny explică tasta peste care ții mouse-ul
 document.querySelectorAll(".key[data-tip]").forEach((button) => {
   button.addEventListener("pointerenter", (event) => {
