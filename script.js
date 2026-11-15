@@ -824,7 +824,7 @@ let suppressNextClick = false;
 // Fața lui Danny în balon: o copie a desenului mare, decupată pe cap
 const face = document.querySelector(".hedgehog").cloneNode(true);
 face.setAttribute("class", "tip-face");
-face.setAttribute("viewBox", "55 45 150 150");
+face.setAttribute("viewBox", "70 100 160 160");
 face.setAttribute("aria-hidden", "true");
 face.removeAttribute("role");
 face.removeAttribute("aria-label");

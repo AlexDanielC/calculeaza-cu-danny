@@ -1,7 +1,7 @@
 # Calculăm cu Danny
 
 Calculator web pentru elevii din clasele I–VIII, făcut cu HTML, CSS și JavaScript simplu (fără framework-uri).
-Danny, un arici cu ochelari, explică fiecare tastă și reacționează la rezultate.
+Danny, un arici mascotă, explică fiecare tastă și reacționează la rezultate.
 
 ## Cum se rulează
 
