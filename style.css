@@ -481,6 +481,11 @@ kbd {
   animation: pop-in 0.16s ease-out;
 }
 
+/* display: flex de mai sus ar anula atributul hidden, deci bula n-ar mai dispărea */
+.tip-pop[hidden] {
+  display: none;
+}
+
 .tip-pop p {
   margin: 0;
   font-family: var(--font-hand);
