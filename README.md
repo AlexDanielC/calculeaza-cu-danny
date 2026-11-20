@@ -33,14 +33,15 @@ Alte lucruri utile:
 - **Mesaje clare la erori:** împărțire la 0, radical din număr negativ, `0⁰`.
 - **Istoric:** ultimele 15 calcule rămân salvate în browser. Dacă apeși pe unul, refolosești rezultatul.
 - **Tastatură:** cifre, `+ - * / ^ ( ) ;`, `Enter`, `Backspace`, `Esc`.
+- **Zi și noapte:** panoul solar al calculatorului e comutatorul. Noaptea, caietul se întunecă, ecranul se aprinde și Danny (arici, deci animal nocturn) se bucură. La prima vizită se folosește tema telefonului sau a calculatorului, apoi alegerea ta se ține minte.
 
 ## Structură
 
 | Fișier | Rol |
 |---|---|
 | `index.html` | Structura paginii, tastele și desenul SVG cu Danny |
-| `style.css` | Designul: foaia de caiet, calculatorul, istoricul, animațiile lui Danny |
-| `script.js` | Logica: introducerea expresiei, parserul, funcțiile matematice, istoricul |
+| `style.css` | Designul: foaia de caiet, calculatorul, istoricul, animațiile lui Danny, tema de zi și de noapte |
+| `script.js` | Logica: introducerea expresiei, parserul, funcțiile matematice, istoricul, comutatorul zi / noapte |
 | `tests/calculator.test.js` | Testele automate (`node --test`) |
 
 ## Cum funcționează calculul
@@ -60,4 +61,24 @@ node --test
 
 Testele (în `tests/calculator.test.js`) rulează aplicația într-o pagină simulată și apasă tastele ca un utilizator:
 ordinea operațiilor, împărțirea cu rest, fracțiile, factorii primi, mesajele de eroare, istoricul
-și bula lui Danny de pe telefon (apare la apăsare lungă, dispare la 2,5 secunde, la derulare sau la o atingere în altă parte).
+bula lui Danny de pe telefon (apare la apăsare lungă, dispare la 2,5 secunde, la derulare sau la o atingere în altă parte)
+și tema de zi / noapte (urmează sistemul la prima vizită, apoi ține minte alegerea).
+
+## Jurnal de modificări
+
+### 21 noiembrie 2026
+- **Temă de noapte**, cu panoul solar al calculatorului drept comutator:
+  - noaptea se întinde pe pagină ca un cerc care pornește din panou, iar soarele de lângă el se transformă în lună;
+  - caietul devine bleumarin, cu o lumină caldă de veioză, iar ecranul LCD se aprinde ca un calculator cu lumină de fundal;
+  - Danny reacționează la schimbare, pentru că aricii sunt animale nocturne;
+  - la prima vizită se folosește tema telefonului sau a calculatorului, apoi alegerea se ține minte, fără ca pagina să clipească alb la încărcare.
+- Panoul solar are explicație, ca tastele: mouse deasupra pe desktop, apăsare lungă pe telefon.
+- Pe telefon, zona de atingere a panoului e mai mare decât panoul desenat, iar bara browserului ia culoarea temei.
+- Culorile din `style.css` sunt acum variabile, schimbate dintr-un singur loc pentru fiecare temă.
+- 9 teste noi pentru temă (59 în total).
+
+### 15 noiembrie 2026
+- Prima versiune a calculatorului, publicată pe GitHub Pages.
+- Danny are o mascotă nouă, iar explicațiile tastelor merg și pe telefon, la apăsare lungă.
+- Reparat: pe telefon, bula cu explicația nu mai rămâne blocată pe ecran. Dispare la 2,5 secunde după ce ridici degetul, când derulezi pagina sau când atingi în altă parte.
+- Teste automate pentru calcule, erori, istoric și bula lui Danny.

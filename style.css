@@ -11,11 +11,59 @@
   --cream: #f4efe2;
   --lcd: #dfe6cc;
   --lcd-ink: #232a1c;
+  --lcd-soft: #5c6447;
+  --lcd-note: #4d5638;
+  --lcd-glow: 0 0 0 transparent;
+
+  /* Suprafețe: balonul, istoricul, eticheta de sus */
+  --surface: #ffffff;
+  --surface-warm: #fff6e4;
+  --card: #fffdf7;
+  --outline: #1d2140;   /* conturul „autocolantelor” */
+  --drop: #1d2140;      /* umbra lor plină, decalată */
+  --dash: rgba(29, 33, 64, 0.15);
+  --kbd-border: rgba(29, 33, 64, 0.25);
+  --card-shadow: 0 1px 0 rgba(29, 33, 64, 0.08), 0 18px 34px -20px rgba(29, 33, 64, 0.45);
+  --device: linear-gradient(160deg, #2c3260 0%, #1b1f3b 100%);
+  --device-shadow: 0 34px 60px -24px rgba(29, 33, 64, 0.6), 0 14px 24px -14px rgba(29, 33, 64, 0.45);
+  --lamp: linear-gradient(transparent, transparent);
 
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-hand: "Caveat", "Comic Sans MS", cursive;
+
+  color-scheme: light;
+}
+
+/* ============ Noaptea: caietul la lumina veiozei, ecranul cu lumină de fundal ============ */
+:root[data-theme="dark"] {
+  --paper: #161a30;
+  --grid: rgba(150, 170, 255, 0.07);
+  --margin-line: rgba(232, 96, 76, 0.3);
+  --ink: #ecebf7;
+  --ink-soft: #c9cbe6;
+  --muted: #a2a6c4;
+  --cream: #e7e1d1;
+  --lcd: #b4e6c0;
+  --lcd-ink: #0f2416;
+  --lcd-soft: #3d6849;
+  --lcd-note: #2f5a3b;
+  --lcd-glow: 0 0 28px rgba(150, 235, 175, 0.3);
+
+  --surface: #242a4d;
+  --surface-warm: #2f2c48;
+  --card: #1f2443;
+  --outline: #e6e1d3;
+  --drop: #070815;
+  --dash: rgba(236, 235, 247, 0.16);
+  --kbd-border: rgba(236, 235, 247, 0.25);
+  --card-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 34px -18px rgba(0, 0, 0, 0.75);
+  --device: linear-gradient(160deg, #373e76 0%, #20254a 100%);
+  --device-shadow: 0 34px 60px -24px rgba(0, 0, 0, 0.8), 0 14px 24px -14px rgba(0, 0, 0, 0.6);
+  --lamp: radial-gradient(ellipse 70% 55% at 18% -8%, rgba(243, 163, 58, 0.13), transparent 70%);
+
+  color-scheme: dark;
 }
 
 * {
@@ -30,9 +78,11 @@ body {
   background-color: var(--paper);
   /* Foaie de caiet de matematică */
   background-image:
+    var(--lamp),
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 26px 26px;
+  background-size: 100% 100vh, 26px 26px, 26px 26px;
+  background-repeat: no-repeat, repeat, repeat;
 }
 
 /* Linia roșie de margine a caietului */
@@ -62,14 +112,14 @@ body {
   display: inline-block;
   margin: 0 0 18px;
   padding: 6px 14px;
-  border: 1.5px solid var(--ink);
+  border: 1.5px solid var(--outline);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--drop);
 }
 
 h1 {
@@ -125,12 +175,11 @@ h1 {
   width: min(100%, 420px);
   padding: 18px 20px 24px;
   border-radius: 32px;
-  background: linear-gradient(160deg, #2c3260 0%, #1b1f3b 100%);
+  background: var(--device);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -3px 0 rgba(0, 0, 0, 0.25),
-    0 34px 60px -24px rgba(29, 33, 64, 0.6),
-    0 14px 24px -14px rgba(29, 33, 64, 0.45);
+    var(--device-shadow);
 }
 
 .device-top {
@@ -151,15 +200,133 @@ h1 {
   font-weight: 700;
 }
 
-/* Panoul solar al calculatorului */
+/* Panoul solar al calculatorului, care e și comutatorul zi / noapte */
 .solar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Zonă de atingere mai mare decât panoul, ca să fie ușor de nimerit cu degetul */
+.solar::before {
+  content: "";
+  position: absolute;
+  inset: -12px -8px;
+}
+
+.solar:focus-visible {
+  outline: 3px solid var(--marigold);
+  outline-offset: 5px;
+}
+
+.solar-sky {
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+  transition: transform 0.15s ease;
+}
+
+.solar:active .solar-sky {
+  transform: scale(0.85);
+}
+
+.sun,
+.moon {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+}
+
+.sun circle {
+  fill: var(--marigold);
+}
+
+.sun path {
+  fill: none;
+  stroke: var(--marigold);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.moon {
+  fill: #f4efe2;
+  opacity: 0;
+  transform: rotate(-60deg) scale(0.5);
+}
+
+[data-theme="dark"] .sun {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+
+[data-theme="dark"] .moon {
+  opacity: 1;
+  transform: none;
+}
+
+.solar-cells {
+  position: relative;
+  overflow: hidden;
   width: 92px;
   height: 20px;
   border-radius: 4px;
   background:
     repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, 0.12) 22px 23px),
-    linear-gradient(180deg, #4a3a33, #2a211d);
+    linear-gradient(180deg, #5a4536, #2a211d);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: filter 0.15s ease;
+}
+
+/* Ziua: din când în când, o rază de soare trece peste celule */
+.solar-cells::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 226, 160, 0.5) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: glint 6s ease-in-out infinite;
+}
+
+.solar:hover .solar-cells {
+  filter: brightness(1.25);
+}
+
+/* Noaptea: celulele sunt stinse și reflectă câteva stele */
+[data-theme="dark"] .solar-cells {
+  background:
+    radial-gradient(circle at 18% 35%, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 57% 70%, rgba(255, 255, 255, 0.55) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 84% 28%, rgba(255, 255, 255, 0.6) 0 0.8px, transparent 1.4px),
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, 0.08) 22px 23px),
+    linear-gradient(180deg, #2b2742, #15122a);
+}
+
+[data-theme="dark"] .solar-cells::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes glint {
+  0%, 55% { transform: translateX(-120%); }
+  80%, 100% { transform: translateX(120%); }
+}
+
+/* Trecerea zi / noapte: noua temă se întinde ca un cerc din panou (vezi script.js) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 .display {
@@ -173,13 +340,14 @@ h1 {
   font-family: var(--font-mono);
   text-align: right;
   overflow-wrap: anywhere;
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.12), var(--lcd-glow);
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 .expression {
   min-height: 1.3em;
   font-size: 0.9rem;
-  color: #5c6447;
+  color: var(--lcd-soft);
 }
 
 .result {
@@ -207,7 +375,7 @@ h1 {
 .note {
   min-height: 1.25em;
   font-size: 0.82rem;
-  color: #4d5638;
+  color: var(--lcd-note);
 }
 
 /* Fracție scrisă pe două rânduri */
@@ -242,7 +410,7 @@ h1 {
   border: 0;
   border-radius: 14px;
   background: var(--cream);
-  color: var(--ink);
+  color: #1d2140; /* tastele rămân deschise și noaptea, deci textul rămâne închis */
   font-family: var(--font-ui);
   font-size: 1.3rem;
   font-weight: 500;
@@ -339,8 +507,8 @@ h1 {
   width: min(100%, 300px);
   padding: 26px 22px 18px;
   border-radius: 4px;
-  background: #fffdf7;
-  box-shadow: 0 1px 0 rgba(29, 33, 64, 0.08), 0 18px 34px -20px rgba(29, 33, 64, 0.45);
+  background: var(--card);
+  box-shadow: var(--card-shadow);
   transform: rotate(-1.2deg);
 }
 
@@ -405,7 +573,7 @@ h1 {
   gap: 2px;
   padding: 9px 6px;
   border: 0;
-  border-bottom: 1.5px dashed rgba(29, 33, 64, 0.15);
+  border-bottom: 1.5px dashed var(--dash);
   background: none;
   color: var(--ink);
   text-align: right;
@@ -451,14 +619,18 @@ h1 {
   color: var(--muted);
 }
 
+.hint + .hint {
+  margin-top: 6px;
+}
+
 kbd {
   display: inline-block;
   min-width: 1.6em;
   padding: 1px 6px;
-  border: 1px solid rgba(29, 33, 64, 0.25);
+  border: 1px solid var(--kbd-border);
   border-bottom-width: 2px;
   border-radius: 5px;
-  background: #fff;
+  background: var(--surface);
   font: 500 0.78rem var(--font-mono);
   text-align: center;
 }
@@ -473,10 +645,10 @@ kbd {
   width: max-content;
   max-width: min(300px, calc(100vw - 24px));
   padding: 8px 14px 8px 8px;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--outline);
   border-radius: 18px;
-  background: #fff6e4;
-  box-shadow: 4px 4px 0 var(--ink);
+  background: var(--surface-warm);
+  box-shadow: 4px 4px 0 var(--drop);
   pointer-events: none;
   animation: pop-in 0.16s ease-out;
 }
@@ -531,18 +703,18 @@ kbd {
   width: 250px;
   margin: 0;
   padding: 12px 16px;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--outline);
   border-radius: 20px 20px 4px 20px;
-  background: #fff;
+  background: var(--surface);
   font-family: var(--font-hand);
   font-size: 1.35rem;
   font-weight: 600;
   line-height: 1.15;
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 4px 4px 0 var(--drop);
 }
 
 .bubble.is-tip {
-  background: #fff6e4;
+  background: var(--surface-warm);
 }
 
 .eye {
@@ -615,6 +787,7 @@ kbd {
   .ctl, .keys .ctl ~ .fx:nth-child(-n + 15) { height: 48px; }
   .word { font-size: 0.72rem; }
   .calculator { padding: 14px 12px 18px; border-radius: 26px; }
+  .solar-cells { width: 76px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -622,6 +795,7 @@ kbd {
     animation: none;
   }
   .key { transition: none; }
+  .solar-cells::after { animation: none; }
 }
 
 .nowrap {

@@ -802,16 +802,23 @@ function press(key) {
 
 const keysEl = document.querySelector(".keys");
 
+// Zona din care Danny explică butoanele: tastele și panoul solar
+const tipZone = document.querySelector(".calculator");
+
+// A fost apăsare lungă? Atunci doar explicăm, nu apăsăm butonul.
+function takeSuppressedClick() {
+  const suppressed = suppressNextClick;
+  suppressNextClick = false;
+  return suppressed;
+}
+
 keysEl.addEventListener("click", (event) => {
-  if (suppressNextClick) {
-    suppressNextClick = false; // a fost apăsare lungă: doar explicăm, nu apăsăm tasta
-    return;
-  }
+  if (takeSuppressedClick()) return;
   const button = event.target.closest("button[data-k]");
   if (button) press(button.dataset.k);
 });
 
-// ---------- Telefon: apăsare lungă pe o tastă → Danny explică ce face ----------
+// ---------- Telefon: apăsare lungă pe un buton → Danny explică ce face ----------
 
 const LONG_PRESS_MS = 450;
 const tipPop = document.getElementById("tip-pop");
@@ -854,11 +861,11 @@ function cancelLongPress() {
   pressTimer = null;
 }
 
-keysEl.addEventListener("pointerdown", (event) => {
+tipZone.addEventListener("pointerdown", (event) => {
   if (event.pointerType === "mouse") return;
   suppressNextClick = false;
   hideTipPop();
-  const button = event.target.closest(".key[data-tip]");
+  const button = event.target.closest("[data-tip]");
   if (!button) return;
   pressStart = { x: event.clientX, y: event.clientY };
   pressTimer = setTimeout(() => {
@@ -869,22 +876,25 @@ keysEl.addEventListener("pointerdown", (event) => {
   }, LONG_PRESS_MS);
 });
 
-keysEl.addEventListener("pointermove", (event) => {
+tipZone.addEventListener("pointermove", (event) => {
   if (!pressTimer) return;
   if (Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > 10) cancelLongPress();
 });
 
-keysEl.addEventListener("pointerup", () => {
+tipZone.addEventListener("pointerup", () => {
   cancelLongPress();
   if (!tipPop.hidden) hideTipPop(2500);
 });
 
-keysEl.addEventListener("pointercancel", () => {
+tipZone.addEventListener("pointercancel", () => {
   cancelLongPress();
   hideTipPop();
 });
 
-keysEl.addEventListener("contextmenu", (event) => event.preventDefault());
+// Fără meniul de copiere la apăsare lungă pe butoane (dar ecranul rămâne copiabil)
+tipZone.addEventListener("contextmenu", (event) => {
+  if (event.target.closest("[data-tip]")) event.preventDefault();
+});
 
 // Bula dispare imediat dacă derulezi pagina sau atingi oriunde altundeva
 const dismissTipPop = () => {
@@ -892,11 +902,11 @@ const dismissTipPop = () => {
 };
 document.addEventListener("scroll", dismissTipPop, { capture: true, passive: true });
 document.addEventListener("pointerdown", (event) => {
-  if (!keysEl.contains(event.target)) dismissTipPop(); // pe taste se ocupă deja handler-ul de mai sus
+  if (!tipZone.contains(event.target)) dismissTipPop(); // pe calculator se ocupă deja handler-ul de mai sus
 });
 
-// Danny explică tasta peste care ții mouse-ul
-document.querySelectorAll(".key[data-tip]").forEach((button) => {
+// Danny explică butonul peste care ții mouse-ul
+tipZone.querySelectorAll("[data-tip]").forEach((button) => {
   button.addEventListener("pointerenter", (event) => {
     if (event.pointerType === "mouse") showTip(button.dataset.tip);
   });
@@ -906,6 +916,86 @@ document.querySelectorAll(".key[data-tip]").forEach((button) => {
   });
   button.addEventListener("blur", hideTip);
 });
+
+// ================= Ziua și noaptea (panoul solar e comutatorul) =================
+
+const THEME_KEY = "danny-tema";
+const rootEl = document.documentElement;
+const themeToggle = document.getElementById("theme-toggle");
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const THEMES = {
+  light: {
+    bar: "#f6f2e8",
+    tip: "Panoul solar: apasă pe el și se face noapte. Aricii sunt animale nocturne!",
+    hello: [
+      "Bună dimineața! Panoul solar s-a încărcat, putem calcula.",
+      "A răsărit soarele! Numerele se văd mai bine la lumină.",
+    ],
+  },
+  dark: {
+    bar: "#161a30",
+    tip: "E noapte. Apasă pe panoul solar și răsare soarele.",
+    hello: [
+      "Ura, e noapte! Aricii sunt animale nocturne, acum calculez cel mai bine.",
+      "S-a aprins lumina ecranului. Hai la calcule pe întuneric!",
+    ],
+  },
+};
+
+function savedTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    return saved in THEMES ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function applyTheme(theme) {
+  rootEl.dataset.theme = theme;
+  themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+  themeToggle.dataset.tip = THEMES[theme].tip;
+  themeColorMeta?.setAttribute("content", THEMES[theme].bar);
+}
+
+// Noaptea (sau ziua) se întinde pe pagină pornind chiar din panoul solar
+function switchTheme(theme) {
+  if (!document.startViewTransition || reducedMotion.matches) return applyTheme(theme);
+  const panel = themeToggle.getBoundingClientRect();
+  const x = panel.left + panel.width / 2;
+  const y = panel.top + panel.height / 2;
+  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  const transition = document.startViewTransition(() => applyTheme(theme));
+  transition.ready.then(() => {
+    rootEl.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
+    );
+  }).catch(() => {});
+}
+
+themeToggle.addEventListener("click", () => {
+  if (takeSuppressedClick()) return;
+  const theme = rootEl.dataset.theme === "dark" ? "light" : "dark";
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    // fără stocare, tema se păstrează doar până închizi pagina
+  }
+  if (!tipPop.hidden) hideTipPop();
+  switchTheme(theme);
+  say(pick(THEMES[theme].hello), "happy");
+});
+
+// Până alegi tu, pagina urmează tema telefonului sau a calculatorului
+systemDark.addEventListener?.("change", (event) => {
+  if (!savedTheme()) switchTheme(event.matches ? "dark" : "light");
+});
+
+applyTheme(savedTheme() ?? (systemDark.matches ? "dark" : "light"));
 
 const KEYBOARD = {
   "+": "op:+", "-": "op:-", "*": "op:*", "x": "op:*", "/": "op:/", ":": "op:/", "^": "op:^",

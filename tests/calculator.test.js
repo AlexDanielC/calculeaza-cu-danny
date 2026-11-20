@@ -80,6 +80,9 @@ class FakeElement {
   matches() {
     return false;
   }
+  querySelectorAll() {
+    return [];
+  }
   closest() {
     return null;
   }
@@ -88,17 +91,33 @@ class FakeElement {
   }
 }
 
-// O tastă de pe calculator, care se află în interiorul zonei de taste
-function fakeKey(keysEl, k, tip = "Explicația tastei") {
+// O tastă de pe calculator
+function fakeKey(calculatorEl, k, tip = "Explicația tastei") {
   const button = new FakeElement("button");
   button.dataset.k = k;
   button.dataset.tip = tip;
   button.closest = () => button;
-  button.insideKeys = keysEl;
+  button.insideCalculator = calculatorEl;
   return button;
 }
 
-function loadApp() {
+// Preferințele sistemului (tema întunecată, mișcare redusă), cu notificare la schimbare
+function fakeMedia({ dark = false } = {}) {
+  const queries = {};
+  const matchMedia = (query) => (queries[query] ??= {
+    matches: query.includes("dark") ? dark : false,
+    listeners: [],
+    addEventListener(type, fn) { this.listeners.push(fn); },
+  });
+  const setSystemDark = (value) => {
+    const query = matchMedia("(prefers-color-scheme: dark)");
+    query.matches = value;
+    query.listeners.forEach((fn) => fn({ matches: value }));
+  };
+  return { matchMedia, setSystemDark };
+}
+
+function loadApp({ systemDark = false, saved = {} } = {}) {
   const byId = {};
   const bySelector = {};
   const element = (store, key) => (store[key] ??= new FakeElement());
@@ -111,13 +130,15 @@ function loadApp() {
   document.createDocumentFragment = () => Object.assign(new FakeElement(), { isFragment: true });
   element(byId, "tip-pop").hidden = true;
 
-  const keysEl = element(bySelector, ".keys");
-  keysEl.contains = (node) => node === keysEl || node?.insideKeys === keysEl;
+  document.documentElement = new FakeElement("html");
+  const calculatorEl = element(bySelector, ".calculator");
+  calculatorEl.contains = (node) => node === calculatorEl || node?.insideCalculator === calculatorEl;
 
-  const storage = new Map();
+  const media = fakeMedia({ dark: systemDark });
+  const storage = new Map(Object.entries(saved));
   const context = vm.createContext({
     document,
-    window: { matchMedia: () => ({ matches: false }), innerWidth: 400 },
+    window: { matchMedia: media.matchMedia, innerWidth: 400, innerHeight: 800 },
     navigator: {},
     localStorage: {
       getItem: (k) => (storage.has(k) ? storage.get(k) : null),
@@ -134,8 +155,13 @@ function loadApp() {
   return {
     app,
     document,
-    keysEl,
+    calculatorEl,
+    keysEl: element(bySelector, ".keys"),
     storage,
+    setSystemDark: media.setSystemDark,
+    get theme() { return document.documentElement.dataset.theme; },
+    themeToggle: byId["theme-toggle"],
+    get bubble() { return byId.bubble.textContent; },
     screen: {
       get main() { return byId.result.textContent; },
       get expression() { return byId.expression.textContent; },
@@ -321,8 +347,8 @@ test("tastatura fizică: 2 + 3 Enter", () => {
 // ================= Bula lui Danny pe telefon =================
 
 function longPress(page, k = "digit:7") {
-  const button = fakeKey(page.keysEl, k);
-  page.keysEl.dispatch("pointerdown", { pointerType: "touch", target: button, clientX: 0, clientY: 0 });
+  const button = fakeKey(page.calculatorEl, k);
+  page.calculatorEl.dispatch("pointerdown", { pointerType: "touch", target: button, clientX: 0, clientY: 0 });
   mock.timers.tick(450);
   return button;
 }
@@ -337,7 +363,7 @@ test("apăsare lungă → apare bula, iar tasta nu se apasă", () => {
     const page = loadApp();
     const button = longPress(page);
     assert.equal(page.tipPop.hidden, false);
-    page.keysEl.dispatch("pointerup");
+    page.calculatorEl.dispatch("pointerup");
     page.keysEl.dispatch("click", { target: button });
     assert.equal(page.screen.main, "0");
   } finally {
@@ -350,7 +376,7 @@ test("bula dispare la 2,5 secunde după ce ridici degetul", () => {
   try {
     const page = loadApp();
     longPress(page);
-    page.keysEl.dispatch("pointerup");
+    page.calculatorEl.dispatch("pointerup");
     mock.timers.tick(2400);
     assert.equal(page.tipPop.hidden, false);
     mock.timers.tick(100);
@@ -373,12 +399,12 @@ test("bula dispare când derulezi pagina", () => {
   }
 });
 
-test("bula dispare când atingi în afara tastelor", () => {
+test("bula dispare când atingi în afara calculatorului", () => {
   mock.timers.enable({ apis: ["setTimeout"] });
   try {
     const page = loadApp();
     longPress(page);
-    page.keysEl.dispatch("pointerup");
+    page.calculatorEl.dispatch("pointerup");
     page.document.dispatch("pointerdown", { target: new FakeElement() });
     mock.timers.tick(0);
     assert.equal(page.tipPop.hidden, true);
@@ -391,13 +417,90 @@ test("o atingere scurtă nu arată bula", () => {
   mock.timers.enable({ apis: ["setTimeout"] });
   try {
     const page = loadApp();
-    const button = fakeKey(page.keysEl, "digit:7");
-    page.keysEl.dispatch("pointerdown", { pointerType: "touch", target: button, clientX: 0, clientY: 0 });
+    const button = fakeKey(page.calculatorEl, "digit:7");
+    page.calculatorEl.dispatch("pointerdown", { pointerType: "touch", target: button, clientX: 0, clientY: 0 });
     mock.timers.tick(100);
-    page.keysEl.dispatch("pointerup");
+    page.calculatorEl.dispatch("pointerup");
     mock.timers.tick(1000);
     assert.equal(page.tipPop.hidden, true);
   } finally {
     mock.timers.reset();
   }
+});
+
+// ================= Ziua și noaptea =================
+
+test("prima vizită urmează tema sistemului: zi", () => {
+  assert.equal(loadApp({ systemDark: false }).theme, "light");
+});
+
+test("prima vizită urmează tema sistemului: noapte", () => {
+  const page = loadApp({ systemDark: true });
+  assert.equal(page.theme, "dark");
+  assert.equal(page.themeToggle.attributes["aria-pressed"], "true");
+});
+
+test("panoul solar comută noaptea, salvează alegerea și Danny reacționează", () => {
+  const page = loadApp();
+  page.themeToggle.dispatch("click");
+  assert.equal(page.theme, "dark");
+  assert.equal(page.storage.get("danny-tema"), "dark");
+  assert.equal(page.themeToggle.attributes["aria-pressed"], "true");
+  assert.match(page.bubble, /noapte|întuneric/i);
+  assert.match(page.themeToggle.dataset.tip, /răsare soarele/);
+
+  page.themeToggle.dispatch("click");
+  assert.equal(page.theme, "light");
+  assert.equal(page.storage.get("danny-tema"), "light");
+  assert.equal(page.themeToggle.attributes["aria-pressed"], "false");
+});
+
+test("alegerea salvată câștigă în fața temei sistemului", () => {
+  assert.equal(loadApp({ systemDark: true, saved: { "danny-tema": "light" } }).theme, "light");
+});
+
+test("dacă n-ai ales nimic, pagina urmează schimbările sistemului", () => {
+  const page = loadApp();
+  page.setSystemDark(true);
+  assert.equal(page.theme, "dark");
+});
+
+test("după ce ai ales, schimbarea sistemului nu-ți mai strică alegerea", () => {
+  const page = loadApp();
+  page.themeToggle.dispatch("click"); // noapte
+  page.themeToggle.dispatch("click"); // înapoi la zi, ales de tine
+  page.setSystemDark(true);
+  assert.equal(page.theme, "light");
+});
+
+test("apăsare lungă pe panoul solar doar explică, nu schimbă tema", () => {
+  mock.timers.enable({ apis: ["setTimeout"] });
+  try {
+    const page = loadApp();
+    page.themeToggle.closest = () => page.themeToggle;
+    page.themeToggle.insideCalculator = page.calculatorEl;
+    page.calculatorEl.dispatch("pointerdown", { pointerType: "touch", target: page.themeToggle, clientX: 0, clientY: 0 });
+    mock.timers.tick(450);
+    assert.equal(page.tipPop.hidden, false);
+    page.calculatorEl.dispatch("pointerup");
+    page.themeToggle.dispatch("click");
+    assert.equal(page.theme, "light");
+    // următoarea atingere normală funcționează din nou
+    page.themeToggle.dispatch("click");
+    assert.equal(page.theme, "dark");
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test("CSS: tema de noapte există și tastele rămân lizibile", () => {
+  assert.match(CSS_TEXT, /:root\[data-theme="dark"\]\s*\{/);
+  assert.match(CSS_TEXT, /\.key \{[^}]*color: #1d2140/);
+});
+
+test("HTML: tema se alege înainte să apară pagina (fără clipire albă)", () => {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const head = html.slice(0, html.indexOf("</head>"));
+  assert.match(head, /dataset\.theme = theme/);
+  assert.match(html, /id="theme-toggle"[^>]*aria-pressed/);
 });
