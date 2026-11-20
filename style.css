@@ -322,7 +322,19 @@ h1 {
   80%, 100% { transform: translateX(120%); }
 }
 
-/* Trecerea zi / noapte: noua temă se întinde ca un cerc din panou (vezi script.js) */
+/* Trecerea zi / noapte pe calculator: un cerc de culoare plină crește din panou (vezi script.js) */
+.theme-veil {
+  position: fixed;
+  z-index: 100;
+  width: 400px;   /* = VEIL_SIZE din script.js */
+  height: 400px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: scale(0);
+  will-change: transform, opacity;
+}
+
+/* Trecerea zi / noapte pe telefon: noua temă se întinde ca un cerc din panou (vezi script.js) */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

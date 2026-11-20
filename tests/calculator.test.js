@@ -83,6 +83,12 @@ class FakeElement {
   querySelectorAll() {
     return [];
   }
+  animate() {
+    return { finished: Promise.resolve() };
+  }
+  remove() {
+    this.removed = true;
+  }
   closest() {
     return null;
   }
@@ -102,10 +108,16 @@ function fakeKey(calculatorEl, k, tip = "Explicația tastei") {
 }
 
 // Preferințele sistemului (tema întunecată, mișcare redusă), cu notificare la schimbare
-function fakeMedia({ dark = false } = {}) {
+function fakeMedia({ dark = false, reducedMotion = true, mouse = false } = {}) {
   const queries = {};
+  const answer = (query) => {
+    if (query.includes("color-scheme")) return dark;
+    if (query.includes("reduced-motion")) return reducedMotion; // implicit fără animații: tema se schimbă pe loc
+    if (query.includes("pointer: fine")) return mouse;
+    return false;
+  };
   const matchMedia = (query) => (queries[query] ??= {
-    matches: query.includes("dark") ? dark : false,
+    matches: answer(query),
     listeners: [],
     addEventListener(type, fn) { this.listeners.push(fn); },
   });
@@ -117,7 +129,7 @@ function fakeMedia({ dark = false } = {}) {
   return { matchMedia, setSystemDark };
 }
 
-function loadApp({ systemDark = false, saved = {} } = {}) {
+function loadApp({ systemDark = false, saved = {}, animations = false, mouse = false } = {}) {
   const byId = {};
   const bySelector = {};
   const element = (store, key) => (store[key] ??= new FakeElement());
@@ -134,7 +146,8 @@ function loadApp({ systemDark = false, saved = {} } = {}) {
   const calculatorEl = element(bySelector, ".calculator");
   calculatorEl.contains = (node) => node === calculatorEl || node?.insideCalculator === calculatorEl;
 
-  const media = fakeMedia({ dark: systemDark });
+  const media = fakeMedia({ dark: systemDark, reducedMotion: !animations, mouse });
+  document.body = new FakeElement("body");
   const storage = new Map(Object.entries(saved));
   const context = vm.createContext({
     document,
@@ -162,6 +175,7 @@ function loadApp({ systemDark = false, saved = {} } = {}) {
     get theme() { return document.documentElement.dataset.theme; },
     themeToggle: byId["theme-toggle"],
     get bubble() { return byId.bubble.textContent; },
+    get veils() { return document.body.children.filter((c) => c.className === "theme-veil"); },
     screen: {
       get main() { return byId.result.textContent; },
       get expression() { return byId.expression.textContent; },
@@ -503,4 +517,16 @@ test("HTML: tema se alege înainte să apară pagina (fără clipire albă)", ()
   const head = html.slice(0, html.indexOf("</head>"));
   assert.match(head, /dataset\.theme = theme/);
   assert.match(html, /id="theme-toggle"[^>]*aria-pressed/);
+});
+
+test("pe calculator (mouse), noaptea vine cu un cerc care crește, apoi tema se schimbă", async () => {
+  const page = loadApp({ animations: true, mouse: true });
+  page.themeToggle.dispatch("click");
+  const [veil] = page.veils;
+  assert.ok(veil, "cercul a apărut");
+  assert.equal(veil.style.background, "#161a30");
+  assert.equal(page.theme, "light"); // încă ziua, cât timp crește cercul
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(page.theme, "dark");
+  assert.equal(veil.removed, true);
 });

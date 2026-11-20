@@ -961,13 +961,23 @@ function applyTheme(theme) {
   themeColorMeta?.setAttribute("content", THEMES[theme].bar);
 }
 
+// Pe calculator (mouse) folosim animația ușoară cu „vălul”; pe telefon, dezvăluirea cu View Transitions
+const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+const VEIL_SIZE = 400; // cercul se desenează o dată la 400px, apoi doar se mărește
+
 // Noaptea (sau ziua) se întinde pe pagină pornind chiar din panoul solar
 function switchTheme(theme) {
-  if (!document.startViewTransition || reducedMotion.matches) return applyTheme(theme);
+  if (reducedMotion.matches) return applyTheme(theme);
   const panel = themeToggle.getBoundingClientRect();
   const x = panel.left + panel.width / 2;
   const y = panel.top + panel.height / 2;
   const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  if (document.startViewTransition && !finePointer.matches) revealPage(theme, x, y, radius);
+  else spreadVeil(theme, x, y, radius);
+}
+
+// Telefon: pagina nouă apare printr-un cerc decupat care crește (clip-path)
+function revealPage(theme, x, y, radius) {
   const transition = document.startViewTransition(() => applyTheme(theme));
   transition.ready.then(() => {
     rootEl.animate(
@@ -975,6 +985,32 @@ function switchTheme(theme) {
       { duration: 650, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
     );
   }).catch(() => {});
+}
+
+/*
+ * Calculator: clip-path redesenează tot ecranul la fiecare cadru, ceea ce pe monitoare mari
+ * se simte sacadat. Aici crește doar un cerc de culoare plină, folosind numai transform și
+ * opacity, pe care placa video le face fără să redeseneze nimic. Tema se schimbă sub cerc,
+ * apoi cercul se estompează.
+ */
+function spreadVeil(theme, x, y, radius) {
+  const veil = document.createElement("div");
+  veil.className = "theme-veil";
+  veil.style.left = `${x - VEIL_SIZE / 2}px`;
+  veil.style.top = `${y - VEIL_SIZE / 2}px`;
+  veil.style.background = THEMES[theme].bar;
+  document.body.append(veil);
+  const grow = veil.animate(
+    { transform: ["scale(0)", `scale(${(radius * 2) / VEIL_SIZE + 0.1})`] },
+    { duration: 520, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+  );
+  grow.finished
+    .then(() => {
+      applyTheme(theme);
+      return veil.animate({ opacity: [1, 0] }, { duration: 280, easing: "ease-out", fill: "forwards" }).finished;
+    })
+    .catch(() => applyTheme(theme))
+    .finally(() => veil.remove());
 }
 
 themeToggle.addEventListener("click", () => {

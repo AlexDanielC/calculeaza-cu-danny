@@ -75,7 +75,8 @@ bula lui Danny de pe telefon (apare la apăsare lungă, dispare la 2,5 secunde, 
 - Panoul solar are explicație, ca tastele: mouse deasupra pe desktop, apăsare lungă pe telefon.
 - Pe telefon, zona de atingere a panoului e mai mare decât panoul desenat, iar bara browserului ia culoarea temei.
 - Culorile din `style.css` sunt acum variabile, schimbate dintr-un singur loc pentru fiecare temă.
-- 9 teste noi pentru temă (59 în total).
+- Pe desktop, trecerea zi / noapte folosește o animație mai ușoară: un cerc de culoare plină crește din panou și se estompează. Animația de pe telefon redesena tot ecranul la fiecare cadru și se mișca sacadat pe monitoarele mari.
+- 10 teste noi pentru temă (60 în total).
 
 ### 15 noiembrie 2026
 - Prima versiune a calculatorului, publicată pe GitHub Pages.
