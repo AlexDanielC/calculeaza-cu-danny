@@ -964,6 +964,8 @@ function applyTheme(theme) {
 // Pe calculator (mouse) folosim animația ușoară cu „vălul”; pe telefon, dezvăluirea cu View Transitions
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 const VEIL_SIZE = 400; // cercul se desenează o dată la 400px, apoi doar se mărește
+// Aproape opac: complet opac, Chrome n-ar mai desena pagina de dedesubt până la estompare
+const VEIL_OPACITY = 0.985;
 
 // Noaptea (sau ziua) se întinde pe pagină pornind chiar din panoul solar
 function switchTheme(theme) {
@@ -1006,9 +1008,12 @@ function spreadVeil(theme, x, y, radius) {
   );
   grow.finished
     .then(() => {
+      // Pagina se redesenează în tema nouă cât timp cercul acoperă tot ecranul,
+      // iar estomparea începe abia după două cadre, când redesenarea s-a terminat
       applyTheme(theme);
-      return veil.animate({ opacity: [1, 0] }, { duration: 280, easing: "ease-out", fill: "forwards" }).finished;
+      return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     })
+    .then(() => veil.animate({ opacity: [VEIL_OPACITY, 0] }, { duration: 300, easing: "ease-out", fill: "forwards" }).finished)
     .catch(() => applyTheme(theme))
     .finally(() => veil.remove());
 }

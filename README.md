@@ -76,6 +76,11 @@ bula lui Danny de pe telefon (apare la apăsare lungă, dispare la 2,5 secunde, 
 - Pe telefon, zona de atingere a panoului e mai mare decât panoul desenat, iar bara browserului ia culoarea temei.
 - Culorile din `style.css` sunt acum variabile, schimbate dintr-un singur loc pentru fiecare temă.
 - Pe desktop, trecerea zi / noapte folosește o animație mai ușoară: un cerc de culoare plină crește din panou și se estompează. Animația de pe telefon redesena tot ecranul la fiecare cadru și se mișca sacadat pe monitoarele mari.
+- **Optimizare de performanță**, pe baza măsurătorilor din Chrome:
+  - grila caietului și lumina veiozei stau pe straturi separate, desenate o singură dată; la schimbarea temei se schimbă doar transparența lor, fără redesenare;
+  - Danny are stratul lui, deci respirația nu mai redesenează pagina la fiecare cadru (în repaus, pagina nu mai consumă nimic);
+  - pe desktop, pagina se redesenează în tema nouă cât timp cercul acoperă ecranul, iar estomparea începe după ce redesenarea s-a terminat;
+  - rezultat, pe un calculator fără accelerare video: o schimbare de temă costă ~230ms de desenare în loc de ~1180ms, ascunși sub cerc.
 - 10 teste noi pentru temă (60 în total).
 
 ### 15 noiembrie 2026

@@ -161,6 +161,7 @@ function loadApp({ systemDark = false, saved = {}, animations = false, mouse = f
     // prin funcții intermediare, ca mock.timers să poată controla timpul
     setTimeout: (...args) => setTimeout(...args),
     clearTimeout: (...args) => clearTimeout(...args),
+    requestAnimationFrame: (fn) => setTimeout(fn, 0),
   });
   vm.runInContext(`${SCRIPT}\n;globalThis.__app = { state, press, get history() { return history; } };`, context);
 
@@ -528,5 +529,7 @@ test("pe calculator (mouse), noaptea vine cu un cerc care crește, apoi tema se 
   assert.equal(page.theme, "light"); // încă ziua, cât timp crește cercul
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(page.theme, "dark");
+  assert.equal(veil.removed, undefined); // cercul mai stă două cadre, cât se redesenează pagina
+  await new Promise((resolve) => setTimeout(resolve, 20));
   assert.equal(veil.removed, true);
 });
